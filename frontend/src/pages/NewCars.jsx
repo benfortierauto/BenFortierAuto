@@ -1,12 +1,83 @@
-import React, { useState } from 'react';
-import { Star, Eye, Heart, Filter, Search } from 'lucide-react';
-import { newCars } from '../data/mock';
+import React, { useState, useEffect } from 'react';
+import { Star, Eye, Heart, Filter, Search, Loader2, CheckCircle, X } from 'lucide-react';
+import axios from 'axios';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 const NewCars = () => {
+  const [cars, setCars] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [selectedCar, setSelectedCar] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
+  const [showInquiryModal, setShowInquiryModal] = useState(false);
+  const [selectedCarForInquiry, setSelectedCarForInquiry] = useState(null);
+  const [inquiryForm, setInquiryForm] = useState({
+    customer_name: '',
+    customer_email: '',
+    customer_phone: '',
+    inquiry_type: 'details',
+    message: ''
+  });
+  const [inquirySubmitting, setInquirySubmitting] = useState(false);
+  const [inquirySuccess, setInquirySuccess] = useState(false);
+
+  useEffect(() => {
+    fetchNewCars();
+  }, []);
+
+  const fetchNewCars = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API}/vehicles?category=new`);
+      setCars(response.data || []);
+    } catch (err) {
+      console.error('Error fetching new cars:', err);
+      setError('Failed to load inventory. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInquiry = (car) => {
+    setSelectedCarForInquiry(car);
+    setShowInquiryModal(true);
+  };
+
+  const submitInquiry = async (e) => {
+    e.preventDefault();
+    if (!selectedCarForInquiry) return;
+
+    setInquirySubmitting(true);
+    try {
+      const inquiryData = {
+        ...inquiryForm,
+        car_id: selectedCarForInquiry.id,
+        car_type: 'new'
+      };
+
+      await axios.post(`${API}/inquiries`, inquiryData);
+      setInquirySuccess(true);
+      setTimeout(() => {
+        setShowInquiryModal(false);
+        setInquirySuccess(false);
+        setInquiryForm({
+          customer_name: '',
+          customer_email: '',
+          customer_phone: '',
+          inquiry_type: 'details',
+          message: ''
+        });
+      }, 2000);
+    } catch (err) {
+      console.error('Error submitting inquiry:', err);
+    } finally {
+      setInquirySubmitting(false);
+    }
+  };
 
   const toggleFavorite = (carId) => {
     setFavorites(prev => 
@@ -16,7 +87,7 @@ const NewCars = () => {
     );
   };
 
-  const filteredCars = newCars.filter(car =>
+  const filteredCars = cars.filter(car =>
     car.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
     car.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
     car.type.toLowerCase().includes(searchTerm.toLowerCase())
@@ -28,6 +99,36 @@ const NewCars = () => {
     if (sortBy === 'price') return parseInt(a.price.replace(/[^0-9]/g, '')) - parseInt(b.price.replace(/[^0-9]/g, ''));
     return 0;
   });
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black py-20 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 text-yellow-500 animate-spin mx-auto mb-4" />
+          <p className="text-white text-lg">Loading inventory...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black py-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="bg-red-900/20 border border-red-700 rounded-xl p-8">
+            <h1 className="text-2xl font-bold text-red-400 mb-4">Unable to Load Inventory</h1>
+            <p className="text-red-300 mb-6">{error}</p>
+            <button 
+              onClick={fetchNewCars}
+              className="px-6 py-3 bg-yellow-500 text-black font-semibold rounded-lg hover:bg-yellow-400 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black py-20">
@@ -76,7 +177,7 @@ const NewCars = () => {
         {/* Results Count */}
         <div className="mb-8">
           <p className="text-gray-400">
-            Showing {sortedCars.length} of {newCars.length} vehicles
+            Showing {sortedCars.length} of {cars.length} vehicles
           </p>
         </div>
 
@@ -91,7 +192,7 @@ const NewCars = () => {
               {/* Image */}
               <div className="relative overflow-hidden">
                 <img
-                  src={car.image}
+                  src={car.image_url}
                   alt={`${car.year} ${car.brand} ${car.model}`}
                   className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -151,7 +252,13 @@ const NewCars = () => {
 
                 {/* Action Buttons */}
                 <div className="grid grid-cols-2 gap-3">
-                  <button className="px-4 py-2 bg-yellow-500 text-black font-semibold rounded-lg hover:bg-yellow-400 transition-colors">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleInquiry(car);
+                    }}
+                    className="px-4 py-2 bg-yellow-500 text-black font-semibold rounded-lg hover:bg-yellow-400 transition-colors"
+                  >
                     Inquire Now
                   </button>
                   <button className="px-4 py-2 bg-transparent border border-gray-600 text-gray-300 font-semibold rounded-lg hover:border-yellow-500 hover:text-yellow-500 transition-colors">
@@ -212,6 +319,104 @@ const NewCars = () => {
           </div>
         </div>
       </div>
+
+      {/* Inquiry Modal */}
+      {showInquiryModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-900 rounded-xl p-8 max-w-md w-full border border-gray-800">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-yellow-500">Car Inquiry</h3>
+              <button 
+                onClick={() => setShowInquiryModal(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            {inquirySuccess ? (
+              <div className="text-center py-8">
+                <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+                <h4 className="text-xl font-bold text-green-400 mb-2">Inquiry Sent!</h4>
+                <p className="text-gray-300">I'll get back to you within 24 hours.</p>
+              </div>
+            ) : (
+              <form onSubmit={submitInquiry} className="space-y-4">
+                <div>
+                  <label className="block text-white font-medium mb-2">Car</label>
+                  <p className="text-yellow-500 font-semibold">
+                    {selectedCarForInquiry?.year} {selectedCarForInquiry?.brand} {selectedCarForInquiry?.model}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-white font-medium mb-2">Name *</label>
+                  <input
+                    type="text"
+                    value={inquiryForm.customer_name}
+                    onChange={(e) => setInquiryForm({...inquiryForm, customer_name: e.target.value})}
+                    required
+                    className="w-full px-3 py-2 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white font-medium mb-2">Email *</label>
+                  <input
+                    type="email"
+                    value={inquiryForm.customer_email}
+                    onChange={(e) => setInquiryForm({...inquiryForm, customer_email: e.target.value})}
+                    required
+                    className="w-full px-3 py-2 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white font-medium mb-2">Phone</label>
+                  <input
+                    type="tel"
+                    value={inquiryForm.customer_phone}
+                    onChange={(e) => setInquiryForm({...inquiryForm, customer_phone: e.target.value})}
+                    className="w-full px-3 py-2 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white font-medium mb-2">I'm interested in</label>
+                  <select
+                    value={inquiryForm.inquiry_type}
+                    onChange={(e) => setInquiryForm({...inquiryForm, inquiry_type: e.target.value})}
+                    className="w-full px-3 py-2 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition-colors"
+                  >
+                    <option value="details">Getting more details</option>
+                    <option value="test_drive">Scheduling a test drive</option>
+                    <option value="purchase">Purchase information</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-white font-medium mb-2">Message</label>
+                  <textarea
+                    value={inquiryForm.message}
+                    onChange={(e) => setInquiryForm({...inquiryForm, message: e.target.value})}
+                    rows={3}
+                    className="w-full px-3 py-2 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition-colors resize-none"
+                    placeholder="Any specific questions or requirements..."
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={inquirySubmitting}
+                  className="w-full px-6 py-3 bg-yellow-500 text-black font-semibold rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-50"
+                >
+                  {inquirySubmitting ? 'Sending...' : 'Send Inquiry'}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

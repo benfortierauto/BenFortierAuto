@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle, Facebook, Instagram, Linkedin } from 'lucide-react';
 import { contactInfo } from '../data/mock';
+import axios from 'axios';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 const Contact = () => {
   const [formData, setFormData] = useState({
-    fullName: '',
+    full_name: '',
     email: '',
     phone: '',
     message: ''
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -17,15 +23,30 @@ const Contact = () => {
       ...prev,
       [name]: value
     }));
+    // Clear error when user starts typing
+    if (error) setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Mock form submission
-    console.log('Form submitted:', formData);
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
-    setFormData({ fullName: '', email: '', phone: '', message: '' });
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await axios.post(`${API}/contact`, formData);
+      
+      if (response.data) {
+        console.log('Contact form submitted successfully:', response.data);
+        setSubmitted(true);
+        setTimeout(() => setSubmitted(false), 5000);
+        setFormData({ full_name: '', email: '', phone: '', message: '' });
+      }
+    } catch (err) {
+      console.error('Error submitting contact form:', err);
+      setError('Failed to send message. Please try again or contact us directly.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -49,23 +70,30 @@ const Contact = () => {
             {submitted && (
               <div className="mb-6 p-4 bg-green-900/20 border border-green-700 rounded-lg flex items-center">
                 <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                <span className="text-green-400">Message sent successfully! I'll get back to you soon.</span>
+                <span className="text-green-400">Message sent successfully! I'll get back to you within 24 hours.</span>
+              </div>
+            )}
+
+            {error && (
+              <div className="mb-6 p-4 bg-red-900/20 border border-red-700 rounded-lg">
+                <span className="text-red-400">{error}</span>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="fullName" className="block text-white font-medium mb-2">
+                <label htmlFor="full_name" className="block text-white font-medium mb-2">
                   Full Name *
                 </label>
                 <input
                   type="text"
-                  id="fullName"
-                  name="fullName"
-                  value={formData.fullName}
+                  id="full_name"
+                  name="full_name"
+                  value={formData.full_name}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-3 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition-colors"
+                  disabled={loading}
+                  className="w-full px-4 py-3 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition-colors disabled:opacity-50"
                   placeholder="Your full name"
                 />
               </div>
@@ -81,7 +109,8 @@ const Contact = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-3 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition-colors"
+                  disabled={loading}
+                  className="w-full px-4 py-3 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition-colors disabled:opacity-50"
                   placeholder="your.email@example.com"
                 />
               </div>
@@ -96,7 +125,8 @@ const Contact = () => {
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition-colors"
+                  disabled={loading}
+                  className="w-full px-4 py-3 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition-colors disabled:opacity-50"
                   placeholder="(555) 123-4567"
                 />
               </div>
@@ -111,18 +141,29 @@ const Contact = () => {
                   value={formData.message}
                   onChange={handleInputChange}
                   required
+                  disabled={loading}
                   rows={5}
-                  className="w-full px-4 py-3 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition-colors resize-none"
+                  className="w-full px-4 py-3 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-yellow-500 transition-colors resize-none disabled:opacity-50"
                   placeholder="Tell me about your ideal car or any questions you have..."
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full flex items-center justify-center px-6 py-4 bg-yellow-500 text-black font-semibold rounded-lg hover:bg-yellow-400 transition-colors group"
+                disabled={loading}
+                className="w-full flex items-center justify-center px-6 py-4 bg-yellow-500 text-black font-semibold rounded-lg hover:bg-yellow-400 transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Send className="mr-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                Send Message
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-2"></div>
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    Send Message
+                  </>
+                )}
               </button>
             </form>
           </div>
