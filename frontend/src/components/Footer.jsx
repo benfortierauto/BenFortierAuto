@@ -10,8 +10,29 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="space-y-4">
-            <Link to="/" className="flex items-center space-x-2">
-              <Car className="h-8 w-8 text-yellow-500" />
+            <Link to="/" className="flex items-center space-x-3">
+              {/* Ben Fortier Custom Logo */}
+              <svg width="32" height="32" viewBox="0 0 100 100" className="text-yellow-500">
+                {/* Outer circle */}
+                <circle cx="50" cy="50" r="45" fill="currentColor" stroke="#000" strokeWidth="2"/>
+                {/* Inner circle */}
+                <circle cx="50" cy="50" r="35" fill="#000" stroke="currentColor" strokeWidth="2"/>
+                {/* Wheel spokes/design */}
+                <g fill="currentColor">
+                  {/* Center circle */}
+                  <circle cx="50" cy="50" r="8"/>
+                  {/* Spokes */}
+                  <rect x="48" y="20" width="4" height="15" rx="2"/>
+                  <rect x="48" y="65" width="4" height="15" rx="2"/>
+                  <rect x="20" y="48" width="15" height="4" rx="2"/>
+                  <rect x="65" y="48" width="15" height="4" rx="2"/>
+                  {/* Diagonal spokes */}
+                  <rect x="32" y="32" width="4" height="12" rx="2" transform="rotate(45 34 38)"/>
+                  <rect x="64" y="32" width="4" height="12" rx="2" transform="rotate(-45 66 38)"/>
+                  <rect x="32" y="56" width="4" height="12" rx="2" transform="rotate(-45 34 62)"/>
+                  <rect x="64" y="56" width="4" height="12" rx="2" transform="rotate(45 66 62)"/>
+                </g>
+              </svg>
               <span className="text-xl font-bold text-yellow-500">Ben Fortier</span>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed">
