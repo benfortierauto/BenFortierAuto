@@ -23,7 +23,20 @@ const Header = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-            <Car className="h-8 w-8 text-yellow-500" />
+            <div className="flex flex-col items-center">
+              {/* Custom Logo - Replace with your provided logo */}
+              <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center border-2 border-yellow-500">
+                <div className="w-4 h-4 bg-yellow-200 rounded-full relative">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-yellow-600 rounded-full"></div>
+                  </div>
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-0.5 w-0.5 h-1 bg-yellow-600"></div>
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-0.5 w-0.5 h-1 bg-yellow-600"></div>
+                  <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-0.5 w-1 h-0.5 bg-yellow-600"></div>
+                  <div className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-0.5 w-1 h-0.5 bg-yellow-600"></div>
+                </div>
+              </div>
+            </div>
             <span className="text-xl font-bold text-yellow-500">Ben Fortier</span>
           </Link>
 
