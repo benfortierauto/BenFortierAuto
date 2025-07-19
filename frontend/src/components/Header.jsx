@@ -22,21 +22,29 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-            <div className="flex flex-col items-center">
-              {/* Custom Logo - Replace with your provided logo */}
-              <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center border-2 border-yellow-500">
-                <div className="w-4 h-4 bg-yellow-200 rounded-full relative">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-2 h-2 bg-yellow-600 rounded-full"></div>
-                  </div>
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-0.5 w-0.5 h-1 bg-yellow-600"></div>
-                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-0.5 w-0.5 h-1 bg-yellow-600"></div>
-                  <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-0.5 w-1 h-0.5 bg-yellow-600"></div>
-                  <div className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-0.5 w-1 h-0.5 bg-yellow-600"></div>
-                </div>
-              </div>
-            </div>
+          <Link to="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+            {/* Ben Fortier Custom Logo */}
+            <svg width="32" height="32" viewBox="0 0 100 100" className="text-yellow-500">
+              {/* Outer circle */}
+              <circle cx="50" cy="50" r="45" fill="currentColor" stroke="#000" strokeWidth="2"/>
+              {/* Inner circle */}
+              <circle cx="50" cy="50" r="35" fill="#000" stroke="currentColor" strokeWidth="2"/>
+              {/* Wheel spokes/design */}
+              <g fill="currentColor">
+                {/* Center circle */}
+                <circle cx="50" cy="50" r="8"/>
+                {/* Spokes */}
+                <rect x="48" y="20" width="4" height="15" rx="2"/>
+                <rect x="48" y="65" width="4" height="15" rx="2"/>
+                <rect x="20" y="48" width="15" height="4" rx="2"/>
+                <rect x="65" y="48" width="15" height="4" rx="2"/>
+                {/* Diagonal spokes */}
+                <rect x="32" y="32" width="4" height="12" rx="2" transform="rotate(45 34 38)"/>
+                <rect x="64" y="32" width="4" height="12" rx="2" transform="rotate(-45 66 38)"/>
+                <rect x="32" y="56" width="4" height="12" rx="2" transform="rotate(-45 34 62)"/>
+                <rect x="64" y="56" width="4" height="12" rx="2" transform="rotate(45 66 62)"/>
+              </g>
+            </svg>
             <span className="text-xl font-bold text-yellow-500">Ben Fortier</span>
           </Link>
 
